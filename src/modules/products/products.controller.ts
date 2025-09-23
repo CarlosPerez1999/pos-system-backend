@@ -7,11 +7,13 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -37,8 +39,8 @@ export class ProductsController {
     description: 'All products retrieved successfully',
   })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async findAll() {
-    return await this.productsService.findAll();
+  async findAll(@Query() paginationDto: PaginationDto) {
+    return await this.productsService.findAll(paginationDto);
   }
 
   @Get(':id')
