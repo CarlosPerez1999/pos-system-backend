@@ -1,0 +1,107 @@
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Product } from './entities/product.entity';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+
+@Injectable()
+export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
+
+  constructor(
+    @InjectRepository(Product)
+    private productsRepository: Repository<Product>,
+  ) {}
+
+  async create(createProductDto: CreateProductDto): Promise<Product> {
+    try {
+      const whereConditions: Record<string, string>[] = [
+        { sku: createProductDto.sku },
+      ];
+
+      if (createProductDto.barcode) {
+        whereConditions.push({ barcode: createProductDto.barcode });
+      }
+
+      const existing = await this.productsRepository.findOne({
+        where: whereConditions,
+      });
+
+      if (existing) {
+        throw new ConflictException(
+          'Product with this SKU or Barcode already exists',
+        );
+      }
+
+      const newProduct = this.productsRepository.create(createProductDto);
+      const savedProduct = await this.productsRepository.save(newProduct);
+
+      return savedProduct;
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Internal server error');
+    }
+  }
+
+  async findAll(): Promise<Product[]> {
+    try {
+      const products = await this.productsRepository.find();
+
+      return products;
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Internal server error');
+    }
+  }
+
+  async findOne(id: string): Promise<Product> {
+    try {
+      const product = await this.productsRepository.findOneBy({ id });
+      if (!product)
+        throw new NotFoundException(`Product with id ${id} not found`);
+      return product;
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Internal server error');
+    }
+  }
+
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
+    try {
+      const product = await this.productsRepository.preload({
+        id,
+        ...updateProductDto,
+      });
+
+      if (!product)
+        throw new NotFoundException(`Product with id ${id} not found`);
+
+      return await this.productsRepository.save(product);
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Internal server error');
+    }
+  }
+
+  async remove(id: string) {
+    try {
+      const result = await this.productsRepository.softDelete(id);
+      if (result.affected === 0) {
+        throw new NotFoundException(`Product with id ${id} not found`);
+      }
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Internal server error');
+    }
+  }
+}
