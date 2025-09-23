@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from './modules/products/products.module';
+import { CommonModule } from './modules/common/common.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ProductsModule } from './modules/products/products.module';
       synchronize: true, //TODO: delete in production
     }),
     ProductsModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],
