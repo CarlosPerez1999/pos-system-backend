@@ -20,6 +20,9 @@ export class Product {
 
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: number;
+  
+  @Column({ type: 'int', default:0 })
+  stock: number;
 
   @Column({ nullable: true })
   imageUrl?: string;

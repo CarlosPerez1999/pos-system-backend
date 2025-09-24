@@ -1,10 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
   IsUrl,
+  Min,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -26,6 +28,11 @@ export class CreateProductDto {
     { message: 'Price must be a valid number with up to 2 decimal places' },
   )
   price: number;
+  
+  @ApiProperty({ example: 10, description: 'Product stock' })
+  @IsInt()
+  @Min(0)
+  stock: number;
 
   @ApiPropertyOptional({
     example: 'https://cdn.example.com/cafe.jpg',
