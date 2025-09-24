@@ -9,7 +9,7 @@ import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Inventory } from './entities/inventory.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { ProductsService } from '../products/products.service';
 import { MovementType } from './enum/movement-type.enum';
 import { Product } from '../products/entities/product.entity';
@@ -27,25 +27,39 @@ export class InventoryService {
     private dataSource: DataSource,
   ) {}
 
-  async create(createInventoryDto: CreateInventoryDto): Promise<Inventory> {
+  async create(
+    createInventoryDto: CreateInventoryDto,
+    manager?: EntityManager,
+  ): Promise<Inventory> {
+    /**
+     * Executes the inventory creation logic within the provided EntityManager context if available.
+     * If no EntityManager is provided, a new transactional context will be created and used.
+     */
     try {
       const product = await this.productsService.findOne(
         createInventoryDto.productId,
       );
 
-      return await this.dataSource.transaction(async (entityManager) => {
+      const executor = async (entityManager: EntityManager) => {
         const newMovement = entityManager.create(Inventory, createInventoryDto);
+
         this.applyProductStock(
           createInventoryDto.movementType,
           product,
           createInventoryDto.quantity,
         );
+
         await entityManager.save(Product, product);
         newMovement.product = product;
-        const savedMovement = await entityManager.save(Inventory, newMovement);
 
-        return savedMovement;
-      });
+        return await entityManager.save(Inventory, newMovement);
+      };
+
+      if (manager) {
+        return await executor(manager);
+      } else {
+        return await this.dataSource.transaction(executor);
+      }
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException('Internal server error');
