@@ -41,6 +41,7 @@ export class InventoryService {
           createInventoryDto.quantity,
         );
         await entityManager.save(Product, product);
+        newMovement.product = product;
         const savedMovement = await entityManager.save(Inventory, newMovement);
 
         return savedMovement;
