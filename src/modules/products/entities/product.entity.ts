@@ -1,8 +1,10 @@
+import { Inventory } from 'src/modules/inventory/entities/inventory.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -44,4 +46,7 @@ export class Product {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Inventory, inventory => inventory.product)
+  inventoryMovements: Inventory[]
 }
