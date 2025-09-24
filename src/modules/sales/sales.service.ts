@@ -11,6 +11,8 @@ import { Repository } from 'typeorm';
 import { Sale } from './entities/sale.entity';
 import { SaleItem } from './entities/sale-item.entity';
 import { ProductsService } from '../products/products.service';
+import { PaginationDto } from '../common/dto/pagination.dto';
+import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 
 @Injectable()
 export class SalesService {
@@ -54,10 +56,18 @@ export class SalesService {
     }
   }
 
-  async findAll() {
+  async findAll(pagination: PaginationDto):Promise<PaginatedResponseDto<Sale>> {
     try {
-      const sales = this.salesRepository.find();
-      return sales;
+      const sales = await this.salesRepository.find({
+        take: pagination.limit ?? 10,
+        skip: pagination.offset ?? 0
+      });
+      return {
+        items: sales,
+        total: await this.salesRepository.count(),
+        limit: pagination.limit ?? 10,
+        offset: pagination.offset ?? 0,
+      }
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException('Internal server error');

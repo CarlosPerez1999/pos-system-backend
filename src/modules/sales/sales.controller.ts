@@ -6,11 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('sales')
 @Controller('sales')
@@ -31,8 +33,8 @@ export class SalesController {
     status: 200,
     description: 'All sales retrieved successfully',
   })
-  findAll() {
-    return this.salesService.findAll();
+  findAll(@Query() paginationDto:PaginationDto) {
+    return this.salesService.findAll(paginationDto);
   }
 
   @Get(':id')
