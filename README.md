@@ -8,14 +8,33 @@ A RESTful API for product management in a Point of Sale system. Built with **Nes
 
 🔨 In progress — initial features implemented:
 
-- [x] Products module
+- [✔️] Products module
+- [✔️] Sales module
+- [✔️] Inventories module
+- [ ] Users module
 
 📝 Upcoming tasks:
 
-- [ ] Sales module
-- [ ] Inventories module
-- [ ] Users module
-- [ ] Authentication and roles  
+- [ ] Authentication with JWT
+- [ ] Role-based access control (@Roles(), RolesGuard)
+- [ ] /me endpoint for authenticated user profile
+- [ ] Route protection with AuthGuard
+- [ ] Token expiration handling and error responses
+
+Frontend Tasks (Next Phase)
+
+- [ ] Design main views (login, dashboard, products, sales, inventory, users)
+- [ ] Connect frontend to backend via REST API
+- [ ] Manage session and JWT storage
+- [ ] Role-based UI guards (redirects, conditional rendering)
+- [ ] Apply branding: logo, colors, typography, favicon
+- [ ] Build dashboard with key metrics
+- [ ] Implement pagination, filters, and form validations
+
+📦 Future Enhancements
+
+- [ ] Export reports (PDF, Excel)
+- [ ] Stock alerts and sales notifications
 
 ---
 
@@ -23,19 +42,19 @@ A RESTful API for product management in a Point of Sale system. Built with **Nes
 
 - NestJS
 - TypeORM
-- PostgreSQL  
+- PostgreSQL
 - Docker
-- Swagger  
+- Swagger
 - class-validator
 
 ---
 
 ## 📦 Requirements
 
-- Node.js >= 18  
-- npm or pnpm  
-- Docker (optional, recommended for database)  
-- PostgreSQL (if not using Docker)  
+- Node.js >= 18
+- npm or pnpm
+- Docker (optional, recommended for database)
+- PostgreSQL (if not using Docker)
 
 ---
 
@@ -50,7 +69,7 @@ DB_PORT=5432
 DB_USERNAME=user
 DB_PASSWORD=secret
 DB_NAME=pos_db
-```  
+```
 
 ---
 
@@ -58,7 +77,7 @@ DB_NAME=pos_db
 
 ```bash
 # Clone the repository
-git clone 
+git clone
 cd pos-api
 
 # Install dependencies
@@ -99,11 +118,11 @@ http://localhost:3000/api
 
 ```
 src/
-├── common/         
+├── common/
 │   └── dto/
 │       ├── pagination.dto.ts
 │       └── paginated-response.dto.ts
-├── products/       
+├── products/
 │   ├── dto/
 │   ├── entities/
 │   ├── products.controller.ts
