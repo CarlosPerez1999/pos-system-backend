@@ -23,7 +23,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column('bool')
+  @Column('bool', {default:true})
   isActive: boolean;
 
   @Column({ type: 'enum', enum: Role, default: Role.SELLER })
