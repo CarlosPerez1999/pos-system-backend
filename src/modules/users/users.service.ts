@@ -26,11 +26,21 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     try {
       const existing = await this.usersRepository.findOne({
-        where: { email: createUserDto.email },
+        where: [
+          { email: createUserDto.email },
+          { username: createUserDto.username },
+        ],
       });
 
-      if (existing)
-        throw new ConflictException('User with this email already exists');
+      if (existing) {
+        const conflictField =
+          existing.email === createUserDto.email ? 'email' : 'username';
+
+        throw new ConflictException(
+          `User with this ${conflictField} already exists`,
+        );
+      }
+
       const { password, ...restDto } = createUserDto;
       const encryptedPass = await bcrypt.hash(password, 10);
       const newUser = this.usersRepository.create({
@@ -38,8 +48,8 @@ export class UsersService {
         ...restDto,
       });
       const savedUser = await this.usersRepository.save(newUser);
-
-      return savedUser;
+      const { password: _savedPassword, ...userWithoutPassword } = savedUser;
+      return userWithoutPassword;
     } catch (error) {
       this.logger.error(error.message);
       if (error instanceof HttpException) {
