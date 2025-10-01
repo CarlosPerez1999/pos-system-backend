@@ -9,6 +9,7 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { PaginationDto } from '../common/dto/pagination.dto';
@@ -30,8 +31,12 @@ export class UsersService {
 
       if (existing)
         throw new ConflictException('User with this email already exists');
-
-      const newUser = this.usersRepository.create(createUserDto);
+      const { password, ...restDto } = createUserDto;
+      const encryptedPass = await bcrypt.hash(password, 10);
+      const newUser = this.usersRepository.create({
+        password: encryptedPass,
+        ...restDto,
+      });
       const savedUser = await this.usersRepository.save(newUser);
 
       return savedUser;
