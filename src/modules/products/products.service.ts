@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -52,11 +52,13 @@ export class ProductsService {
     }
   }
 
-  async findAll(pagination: PaginationDto):Promise<PaginatedResponseDto<Product>> {
+  async findAll(
+    pagination: PaginationDto,
+  ): Promise<PaginatedResponseDto<Product>> {
     try {
       const products = await this.productsRepository.find({
         take: pagination.limit ?? 10,
-        skip: pagination.offset ?? 0
+        skip: pagination.offset ?? 0,
       });
 
       return {
@@ -77,6 +79,34 @@ export class ProductsService {
       if (!product)
         throw new NotFoundException(`Product with id ${id} not found`);
       return product;
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Internal server error');
+    }
+  }
+
+  async findBySearch(
+    query: string,
+    pagination: PaginationDto,
+  ): Promise<PaginatedResponseDto<Product>> {
+    try {
+      const products = await this.productsRepository.find({
+        where: [
+          { sku: ILike(`%${query}%`) },
+          { name: ILike(`%${query}%`) },
+          { barcode: ILike(`%${query}%`) },
+        ],
+
+        take: pagination.limit ?? 10,
+        skip: pagination.offset ?? 0,
+      });
+
+      return {
+        items: products,
+        total: await this.productsRepository.count(),
+        limit: pagination.limit ?? 10,
+        offset: pagination.offset ?? 0,
+      };
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException('Internal server error');

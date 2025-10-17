@@ -33,13 +33,16 @@ export class ProductsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get an array of products' })
-  @ApiResponse({
-    status: 200,
-    description: 'All products retrieved successfully',
-  })
+  @ApiOperation({ summary: 'Get products (optionally filtered)' })
+  @ApiResponse({ status: 200, description: 'Products retrieved successfully' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async findAll(@Query() paginationDto: PaginationDto) {
+  async findAllOrSearch(
+    @Query() paginationDto: PaginationDto,
+    @Query('search') search?: string,
+  ) {
+    if (search) {
+      return await this.productsService.findBySearch(search, paginationDto);
+    }
     return await this.productsService.findAll(paginationDto);
   }
 
