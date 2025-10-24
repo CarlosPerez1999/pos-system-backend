@@ -103,7 +103,7 @@ export class ProductsService {
 
       return {
         items: products,
-        total: await this.productsRepository.count(),
+        total: products.length,
         limit: pagination.limit ?? 10,
         offset: pagination.offset ?? 0,
       };
