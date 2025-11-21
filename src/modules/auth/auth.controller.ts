@@ -1,11 +1,8 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
+  Headers,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
@@ -32,5 +29,14 @@ export class AuthController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
+  }
+
+  @Post('me')
+  @ApiOperation({ summary: 'User register' })
+  @ApiResponse({ status: 201, description: 'User successfully created' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  me(@Headers('authorization') auth: string) {
+    const token = auth?.replace('Bearer ', '');
+    return this.authService.me(token);
   }
 }
