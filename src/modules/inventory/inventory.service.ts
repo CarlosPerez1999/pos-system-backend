@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -9,7 +10,13 @@ import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Inventory } from './entities/inventory.entity';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import {
+  DataSource,
+  EntityManager,
+  LessThanOrEqual,
+  Raw,
+  Repository,
+} from 'typeorm';
 import { ProductsService } from '../products/products.service';
 import { MovementType } from './enum/movement-type.enum';
 import { Product } from '../products/entities/product.entity';
@@ -23,6 +30,8 @@ export class InventoryService {
   constructor(
     @InjectRepository(Inventory)
     private inventoryRepository: Repository<Inventory>,
+    @InjectRepository(Product)
+    private productsRepository: Repository<Product>,
     private readonly productsService: ProductsService,
     private dataSource: DataSource,
   ) {}
@@ -78,6 +87,28 @@ export class InventoryService {
       return {
         items: movements,
         total: await this.inventoryRepository.count(),
+        limit: pagination.limit ?? 10,
+        offset: pagination.offset ?? 0,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Internal server error');
+    }
+  }
+  async findByProductId(
+    productId: string,
+    pagination: PaginationDto,
+  ): Promise<PaginatedResponseDto<Inventory>> {
+    try {
+      const movements = await this.inventoryRepository.find({
+        where: { product: { id: productId } },
+        take: pagination.limit ?? 10,
+        skip: pagination.offset ?? 0,
+      });
+
+      return {
+        items: movements,
+        total: movements.length,
         limit: pagination.limit ?? 10,
         offset: pagination.offset ?? 0,
       };
@@ -197,5 +228,29 @@ export class InventoryService {
       }
     }
     return product;
+  }
+
+  async lowStock(
+    pagination: PaginationDto,
+  ): Promise<PaginatedResponseDto<Product>> {
+    try {
+      const products = await this.productsRepository.find({
+        where: { stock: LessThanOrEqual(5) },
+        take: pagination.limit ?? 10,
+        skip: pagination.offset ?? 0,
+      });
+      return {
+        items: products,
+        total: products.length,
+        limit: pagination.limit ?? 10,
+        offset: pagination.offset ?? 0,
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(error);
+    }
   }
 }

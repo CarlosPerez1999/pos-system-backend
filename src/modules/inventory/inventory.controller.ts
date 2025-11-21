@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
@@ -36,8 +37,32 @@ export class InventoryController {
     description: 'All inventory movements retrieved successfully',
   })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async findAll(@Query() paginationDto: PaginationDto) {
+  async findAllOrSearch(
+    @Query() paginationDto: PaginationDto,
+    @Query('productId') productId?: string,
+  ) {
+    if (productId) {
+      return await this.inventoryService.findByProductId(
+        productId,
+        paginationDto,
+      );
+    }
     return await this.inventoryService.findAll(paginationDto);
+  }
+
+  @Get('low-stock')
+  @ApiOperation({ summary: 'Get products with low stock' })
+  @ApiResponse({
+    status: 200,
+    description: 'Products with low stock retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Products with low stock not found',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async lowStock(@Query() paginationDto: PaginationDto) {
+    return await this.inventoryService.lowStock(paginationDto);
   }
 
   @Get(':id')
