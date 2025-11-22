@@ -6,14 +6,16 @@ import { Sale } from './entities/sale.entity';
 import { SaleItem } from './entities/sale-item.entity';
 import { ProductsModule } from '../products/products.module';
 import { InventoryModule } from '../inventory/inventory.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Sale, SaleItem]),
     ProductsModule,
     InventoryModule,
+    UsersModule,
   ],
   controllers: [SalesController],
   providers: [SalesService],
 })
-export class SalesModule {}
+export class SalesModule { }

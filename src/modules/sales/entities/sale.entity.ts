@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { SaleItem } from './sale-item.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 
 @Entity('sales')
 export class Sale {
@@ -33,5 +35,6 @@ export class Sale {
   @OneToMany(() => SaleItem, (item) => item.sale, { cascade: ['insert'] })
   items: SaleItem[];
 
-  //TODO: Add relationship with user
+  @ManyToOne(() => User, (user) => user.sales)
+  user: User
 }
