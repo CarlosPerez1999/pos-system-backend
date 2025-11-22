@@ -3,10 +3,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Role } from '../enum/role.enum';
+import { Sale } from 'src/modules/sales/entities/sale.entity';
 
 @Entity('users')
 export class User {
@@ -22,10 +24,10 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({select:false})
+  @Column({ select: false })
   password: string;
 
-  @Column('bool', {default:true})
+  @Column('bool', { default: true })
   isActive: boolean;
 
   @Column({ type: 'enum', enum: Role, default: Role.SELLER })
@@ -39,4 +41,7 @@ export class User {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @OneToMany(() => Sale, (sale) => sale.user)
+  sales: Sale[]
 }
