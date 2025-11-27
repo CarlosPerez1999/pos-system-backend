@@ -3,6 +3,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { CreateConfigurationDto } from './dto/create-configuration.dto';
 import { UpdateConfigurationDto } from './dto/update-configuration.dto';
@@ -11,12 +12,30 @@ import { Configuration } from './entities/configuration.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class ConfigurationService {
+export class ConfigurationService implements OnModuleInit {
   logger = new Logger(ConfigurationService.name);
   constructor(
     @InjectRepository(Configuration)
     private configurationRepository: Repository<Configuration>,
   ) {}
+
+  async onModuleInit() {
+    try {
+      const count = await this.configurationRepository.count();
+      if (count === 0) {
+        this.logger.log(
+          'No configuration found. Creating default configuration...',
+        );
+        const defaultConfig = this.configurationRepository.create({
+          storeName: 'POS System',
+        });
+        await this.configurationRepository.save(defaultConfig);
+        this.logger.log('Default configuration created: POS System');
+      }
+    } catch (error) {
+      this.logger.error('Failed to seed default configuration', error);
+    }
+  }
 
   async create(createConfigurationDto: CreateConfigurationDto) {
     try {

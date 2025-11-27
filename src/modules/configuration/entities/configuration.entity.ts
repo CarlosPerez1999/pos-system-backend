@@ -8,19 +8,19 @@ export class Configuration {
   @Column()
   storeName: string;
 
-  @Column()
+  @Column({ nullable: true })
   storeAddress: string;
 
-  @Column()
+  @Column({ nullable: true })
   storePhone: string;
 
-  @Column()
+  @Column({ nullable: true })
   storeEmail: string;
 
-  @Column()
+  @Column({ nullable: true })
   storeCurrency: string;
 
-  @Column()
+  @Column({ nullable: true })
   storeTimezone: string;
 
   @Column({ nullable: true })
@@ -29,6 +29,6 @@ export class Configuration {
   @Column({ nullable: true })
   storeFavicon: string;
 
-  @Column()
+  @Column({ nullable: true })
   storeLanguage: string;
 }

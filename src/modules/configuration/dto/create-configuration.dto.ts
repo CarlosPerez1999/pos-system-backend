@@ -6,23 +6,23 @@ export class CreateConfigurationDto {
   storeName: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   storeAddress: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   storePhone: string;
 
   @IsEmail()
-  @IsNotEmpty()
+  @IsOptional()
   storeEmail: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   storeCurrency: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   storeTimezone: string;
 
   @IsString()
@@ -34,6 +34,6 @@ export class CreateConfigurationDto {
   storeFavicon: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   storeLanguage: string;
 }
