@@ -38,11 +38,22 @@ export class AuthService {
         where: {
           username: username,
         },
-        select: ['id', 'email', 'username', 'password', 'role'],
+        select: [
+          'id',
+          'email',
+          'username',
+          'password',
+          'role',
+          'name',
+          'isActive',
+        ],
       });
 
       if (!user)
         throw new NotFoundException(`User with username ${username} not found`);
+
+      if (!user.isActive)
+        throw new UnauthorizedException('User account is inactive');
 
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) throw new UnauthorizedException('Invalid credentials');
@@ -50,6 +61,7 @@ export class AuthService {
         sub: user.id,
         username: user.username,
         role: user.role,
+        name: user.name,
       };
       return {
         access_token: await this.jwtService.signAsync(payload),
@@ -103,7 +115,11 @@ export class AuthService {
       return { message: 'If the email exists, a reset link has been sent.' };
     }
 
-    const payload = { sub: user.id, purpose: 'reset_password' };
+    const payload = {
+      sub: user.id,
+      purpose: 'reset_password',
+      name: user.name,
+    };
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: '15m',
     });
