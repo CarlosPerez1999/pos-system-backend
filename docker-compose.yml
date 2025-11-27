@@ -1,7 +1,21 @@
 services:
+  api:
+    build: .
+    container_name: pos_system_api
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      DB_HOST: postgres
+      PORT: 3000
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+
   postgres:
     image: postgres:16
-    container_name: POS_System_API
+    container_name: pos_system_db
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
