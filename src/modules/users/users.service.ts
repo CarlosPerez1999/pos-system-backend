@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -15,13 +16,39 @@ import { User } from './entities/user.entity';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 
+import { Role } from './enum/role.enum';
+
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit {
   private readonly logger = new Logger(UsersService.name);
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
   ) {}
+
+  async onModuleInit() {
+    try {
+      const count = await this.usersRepository.count();
+      if (count === 0) {
+        this.logger.log('No users found. Creating default admin user...');
+        const password = await bcrypt.hash('Admin123@', 10);
+        const admin = this.usersRepository.create({
+          email: 'admin@admin.com',
+          username: 'admin',
+          password,
+          name: 'Admin User',
+          isActive: true,
+          role: Role.ADMIN,
+        });
+        await this.usersRepository.save(admin);
+        this.logger.log(
+          'Default admin user created: admin@admin.com / admin123',
+        );
+      }
+    } catch (error) {
+      this.logger.error('Failed to seed admin user', error);
+    }
+  }
 
   async create(createUserDto: CreateUserDto) {
     try {
@@ -106,6 +133,21 @@ export class UsersService {
 
       if (!user) throw new NotFoundException(`User with id ${id} not found`);
 
+      // Check if trying to change role of the last admin
+      if (updateUserDto.role && updateUserDto.role !== Role.ADMIN) {
+        const currentUser = await this.usersRepository.findOneBy({ id });
+        if (currentUser && currentUser.role === Role.ADMIN) {
+          const adminCount = await this.usersRepository.count({
+            where: { role: Role.ADMIN },
+          });
+          if (adminCount <= 1) {
+            throw new ConflictException(
+              'Cannot change role of the last administrator. Create another admin first.',
+            );
+          }
+        }
+      }
+
       return await this.usersRepository.save(user);
     } catch (error) {
       this.logger.error(error.message);
@@ -120,6 +162,21 @@ export class UsersService {
 
   async remove(id: string) {
     try {
+      const user = await this.usersRepository.findOneBy({ id });
+      if (!user) throw new NotFoundException(`User with id ${id} not found`);
+
+      // Check if trying to delete the last admin
+      if (user.role === Role.ADMIN) {
+        const adminCount = await this.usersRepository.count({
+          where: { role: Role.ADMIN },
+        });
+        if (adminCount <= 1) {
+          throw new ConflictException(
+            'Cannot delete the last administrator. Create another admin first.',
+          );
+        }
+      }
+
       const result = await this.usersRepository.softDelete(id);
       if (result.affected === 0)
         throw new NotFoundException(`User with id ${id} not found`);
