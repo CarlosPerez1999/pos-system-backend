@@ -147,6 +147,26 @@ export class SalesService {
     }
   }
 
+  async ofTheDay() {
+    try {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+
+      const sales = await this.salesRepository.find({
+        relations: ['items', 'items.product'],
+        where: { date: Between(start, end) }
+      })
+
+      return sales
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Internal server error');
+    }
+  }
+
   async summary() {
     try {
       const start = new Date();

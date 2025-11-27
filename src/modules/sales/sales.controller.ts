@@ -54,6 +54,16 @@ export class SalesController {
     return this.salesService.summary();
   }
 
+  @Get('of-the-day')
+  @ApiOperation({ summary: 'Get sales of the day' })
+  @ApiResponse({
+    status: 200,
+    description: 'Sales of the day retrieved successfully',
+  })
+  ofTheDay() {
+    return this.salesService.ofTheDay();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get sale by id' })
   @ApiParam({
