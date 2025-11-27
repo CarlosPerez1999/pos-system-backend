@@ -6,35 +6,20 @@ A RESTful API for product management in a Point of Sale system. Built with **Nes
 
 ## 🚧 Project Status
 
-🔨 In progress — initial features implemented:
+🔨 In progress — features implemented:
 
 - [✔️] Products module
 - [✔️] Sales module
 - [✔️] Inventories module
-- [ ] Users module
+- [✔️] Users module
+- [✔️] Authentication with JWT
+- [✔️] Route protection with AuthGuard
+- [✔️] Automatic Admin Seeding
 
 📝 Upcoming tasks:
 
-- [ ] Authentication with JWT
-- [ ] Role-based access control (@Roles(), RolesGuard)
+- [ ] Role-based access control (@Roles(), RolesGuard) - _Partially implemented_
 - [ ] /me endpoint for authenticated user profile
-- [ ] Route protection with AuthGuard
-- [ ] Token expiration handling and error responses
-
-Frontend Tasks (Next Phase)
-
-- [ ] Design main views (login, dashboard, products, sales, inventory, users)
-- [ ] Connect frontend to backend via REST API
-- [ ] Manage session and JWT storage
-- [ ] Role-based UI guards (redirects, conditional rendering)
-- [ ] Apply branding: logo, colors, typography, favicon
-- [ ] Build dashboard with key metrics
-- [ ] Implement pagination, filters, and form validations
-
-📦 Future Enhancements
-
-- [ ] Export reports (PDF, Excel)
-- [ ] Stock alerts and sales notifications
 
 ---
 
@@ -46,59 +31,81 @@ Frontend Tasks (Next Phase)
 - Docker
 - Swagger
 - class-validator
-
----
-
-## 📦 Requirements
-
-- Node.js >= 18
-- npm or pnpm
-- Docker (optional, recommended for database)
-- PostgreSQL (if not using Docker)
+- Passport / JWT
 
 ---
 
 ## ⚙️ Environment Configuration
 
-Create a `.env` file at the root of the project with the required variables. Minimal example:
+Create a `.env` file at the root of the project.
+
+**Development (`.env`):**
 
 ```env
-# Database
-DB_HOST=localhost
+DB_HOST=postgres
 DB_PORT=5432
-DB_USERNAME=user
-DB_PASSWORD=secret
-DB_NAME=pos_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=secret
+POSTGRES_DB=posdb
+PORT=3000
+JWT_SECRET=your_jwt_secret
+NODE_ENV=development
+```
+
+**Production (`.env`):**
+
+```env
+DB_HOST=postgres
+DB_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=secure_password
+POSTGRES_DB=posdb_prod
+PORT=3000
+JWT_SECRET=complex_secure_secret
+NODE_ENV=production
 ```
 
 ---
 
-## 🛠️ Installation
+## 🛠️ Installation & Running
+
+### 🐳 Using Docker (Recommended)
+
+**Development:**
 
 ```bash
-# Clone the repository
-git clone
-cd pos-api
+# Starts API and DB with hot-reload
+docker-compose up --build
+```
 
+**Production:**
+
+```bash
+# Starts optimized API and DB for production
+docker-compose -f docker-compose.prod.yml up --build -d
+```
+
+### 💻 Local (Without Docker)
+
+```bash
 # Install dependencies
 pnpm install
 
-# Docker container with database
-docker-compose up -d
+# Run in development
+pnpm run start:dev
+
+# Build and run in production
+pnpm run build
+pnpm run start:prod
 ```
 
----
+### 🔐 Automatic Admin Seeding
 
-## 🧪 Running the App
+When the application starts, if no users exist in the database, a default admin user is created automatically:
 
-```bash
-# Development (hot-reload)
-npm run start:dev
-
-# Production (build and run)
-npm run build
-npm run start:prod
-```
+- **Email:** `admin@admin.com`
+- **Password:** `admin123`
+- **Role:** `ADMIN`
 
 ---
 

@@ -9,6 +9,7 @@ import { SalesModule } from './modules/sales/sales.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ConfigurationModule } from './modules/configuration/configuration.module';
 
 @Module({
   imports: [
@@ -18,13 +19,13 @@ import { AuthModule } from './modules/auth/auth.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
+      host: process.env.DB_HOST || 'localhost',
       port: 5432,
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       autoLoadEntities: true,
-      synchronize: true, //TODO: delete in production
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
     ProductsModule,
     CommonModule,
@@ -32,6 +33,7 @@ import { AuthModule } from './modules/auth/auth.module';
     InventoryModule,
     UsersModule,
     AuthModule,
+    ConfigurationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
