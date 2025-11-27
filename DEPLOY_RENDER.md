@@ -43,6 +43,7 @@ En la sección **"Environment"** del Web Service, agrega las siguientes variable
 ```bash
 NODE_ENV=production
 PORT=3000
+FRONTEND_URL=<url-de-tu-frontend> # ej: https://mi-tienda.vercel.app
 
 # Database (usa la Internal Database URL de tu PostgreSQL)
 DB_HOST=<hostname-de-tu-db-en-render>
@@ -76,6 +77,7 @@ Render automáticamente detectará el `Dockerfile` y lo usará. No necesitas con
 ## Paso 5: Health Check Path (Opcional pero recomendado)
 
 Si tienes un endpoint de health check (ej: `GET /health`), configúralo:
+
 - **Health Check Path**: `/health`
 
 Si no lo tienes, puedes agregar uno rápido en `app.controller.ts`:
@@ -101,18 +103,22 @@ health() {
 ## Verificación
 
 ### 1. Verifica que la API esté viva:
+
 ```bash
 curl https://pos-system-api.onrender.com/health
 ```
 
 ### 2. Verifica el admin seeding:
+
 Revisa los logs en Render Dashboard. Deberías ver:
+
 ```
 [Nest] LOG [UsersService] Default admin user created: admin@admin.com / admin123
 [Nest] LOG [ConfigurationService] Default configuration created: POS System
 ```
 
 ### 3. Prueba el login:
+
 ```bash
 POST https://pos-system-api.onrender.com/auth/login
 Content-Type: application/json
@@ -149,12 +155,12 @@ Render proporciona **SSL automático y gratuito** para todos los servicios, tant
 
 ## Costos Estimados
 
-| Servicio | Plan | Costo/Mes |
-|----------|------|-----------|
-| PostgreSQL | Free | $0 |
-| PostgreSQL | Starter | $7 |
-| Web Service | Free | $0 (con limitaciones) |
-| Web Service | Starter | $7 |
+| Servicio    | Plan    | Costo/Mes             |
+| ----------- | ------- | --------------------- |
+| PostgreSQL  | Free    | $0                    |
+| PostgreSQL  | Starter | $7                    |
+| Web Service | Free    | $0 (con limitaciones) |
+| Web Service | Starter | $7                    |
 
 **Recomendación para Producción**: Starter Plan para ambos servicios ($14/mes total)
 
@@ -163,14 +169,17 @@ Render proporciona **SSL automático y gratuito** para todos los servicios, tant
 ## Troubleshooting
 
 ### Error: "Application failed to respond"
+
 - Verifica que `PORT=3000` esté configurado
 - Verifica que la app escuche en `0.0.0.0`, no solo en `localhost`
 
 ### Error: "Can't connect to database"
+
 - Usa la **Internal Database URL** (no External)
 - Verifica las variables de entorno
 
 ### El build falla
+
 - Revisa los logs de build
 - Asegúrate de que `Dockerfile` esté en la raíz del repo
 - Verifica que `.dockerignore` no excluya archivos necesarios
@@ -182,6 +191,7 @@ Render proporciona **SSL automático y gratuito** para todos los servicios, tant
 Render se actualiza automáticamente cuando haces `git push` a la rama configurada (ej: `main`).
 
 ### Despliegue manual:
+
 Render Dashboard → Tu servicio → **"Manual Deploy"** → "Deploy latest commit"
 
 ---
@@ -191,11 +201,13 @@ Render Dashboard → Tu servicio → **"Manual Deploy"** → "Deploy latest comm
 Render hace backups automáticos en planes Starter y superiores. Para el plan Free, debes hacer backups manuales.
 
 **Backup manual**:
+
 ```bash
 pg_dump <EXTERNAL_DATABASE_URL> > backup.sql
 ```
 
 **Restaurar**:
+
 ```bash
 psql <EXTERNAL_DATABASE_URL> < backup.sql
 ```
