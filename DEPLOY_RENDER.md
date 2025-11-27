@@ -178,6 +178,12 @@ Render proporciona **SSL automático y gratuito** para todos los servicios, tant
 - Usa la **Internal Database URL** (no External)
 - Verifica las variables de entorno
 
+### Error: "relation does not exist"
+
+- Las migraciones se ejecutan automáticamente al iniciar la app
+- Verifica en los logs que veas: `query: SELECT * FROM "migrations"`
+- Si no se ejecutaron, las migraciones están en `dist/migrations/`
+
 ### El build falla
 
 - Revisa los logs de build

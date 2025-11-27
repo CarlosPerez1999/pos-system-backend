@@ -25,7 +25,9 @@ import { ConfigurationModule } from './modules/configuration/configuration.modul
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       autoLoadEntities: true,
-      synchronize: true, // TODO: set to false after first deploy
+      synchronize: false, // Using migrations instead
+      migrations: ['dist/migrations/*.js'],
+      migrationsRun: true, // Auto-run pending migrations on startup
     }),
     ProductsModule,
     CommonModule,
