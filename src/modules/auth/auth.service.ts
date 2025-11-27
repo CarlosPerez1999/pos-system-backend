@@ -92,7 +92,11 @@ export class AuthService {
 
   async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
     const { oldPassword, newPassword } = changePasswordDto;
-    const user = await this.usersRepository.findOneBy({ id: userId });
+    const user = await this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.id = :id', { id: userId })
+      .addSelect('user.password')
+      .getOne();
 
     if (!user) throw new NotFoundException('User not found');
 
