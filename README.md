@@ -4,40 +4,165 @@ A RESTful API for product management in a Point of Sale system. Built with **Nes
 
 ---
 
+## 📋 Table of Contents
+
+- [Project Status](#-project-status)
+- [Database Schema](#-database-schema)
+- [Technologies](#-technologies)
+- [Features & Functions](#-features--functions)
+- [Configuration](#-configuration)
+- [Installation](#-installation)
+- [Running the Application](#-running-the-application)
+- [Deployment](#-deployment)
+- [API Documentation](#-api-documentation)
+
+---
+
 ## 🚧 Project Status
 
-🔨 In progress — features implemented:
+🔨 **In progress** — features implemented:
 
-- [✔️] Products module
-- [✔️] Sales module
-- [✔️] Inventories module
-- [✔️] Users module
-- [✔️] Authentication with JWT
-- [✔️] Route protection with AuthGuard
-- [✔️] Automatic Admin Seeding
+- [x] Products module
+- [x] Sales module
+- [x] Inventories module
+- [x] Users module
+- [x] Authentication with JWT
+- [x] Route protection with AuthGuard
+- [x] Automatic Admin Seeding
 
-📝 Upcoming tasks:
+📝 **Upcoming tasks:**
 
-- [ ] Role-based access control (@Roles(), RolesGuard) - _Partially implemented_
-- [ ] /me endpoint for authenticated user profile
+- [ ] Role-based access control (`@Roles()`, `RolesGuard`) - _Partially implemented_
+- [ ] `/me` endpoint for authenticated user profile
+
+---
+
+## 🗄️ Database Schema
+
+The following Entity-Relationship (ER) diagram illustrates the database structure and relationships between entities.
+
+```mermaid
+erDiagram
+    USERS ||--o{ SALES : "processes"
+    PRODUCTS ||--o{ INVENTORY : "tracks"
+    PRODUCTS ||--o{ SALE_ITEMS : "listed in"
+    SALES ||--|{ SALE_ITEMS : "contains"
+
+    USERS {
+        uuid id PK
+        string name
+        string username
+        string email
+        string password
+        boolean isActive
+        enum role
+    }
+
+    PRODUCTS {
+        uuid id PK
+        string name
+        string description
+        numeric price
+        int stock
+        string imageUrl
+        string sku
+        string barcode
+        boolean isActive
+    }
+
+    INVENTORY {
+        uuid id PK
+        int quantity
+        enum movementType
+        string description
+        uuid productId FK
+    }
+
+    SALES {
+        uuid id PK
+        date date
+        numeric total
+        uuid userId FK
+    }
+
+    SALE_ITEMS {
+        uuid id PK
+        int quantity
+        numeric unitPrice
+        numeric subTotal
+        uuid saleId FK
+        uuid productId FK
+    }
+
+    CONFIGURATION {
+        int id PK
+        string storeName
+        string storeAddress
+        string storePhone
+        string storeEmail
+        string storeCurrency
+        string storeTimezone
+        string storeLogo
+        string storeFavicon
+        string storeLanguage
+    }
+```
 
 ---
 
 ## 🚀 Technologies
 
-- NestJS
-- TypeORM
-- PostgreSQL
-- Docker
-- Swagger
-- class-validator
-- Passport / JWT
+- **Core Framework**: NestJS
+- **Database**: PostgreSQL
+- **ORM**: TypeORM
+- **Containerization**: Docker
+- **Documentation**: Swagger
+- **Validation**: class-validator
+- **Authentication**: Passport / JWT
 
 ---
 
-## ⚙️ Environment Configuration
+## 🧩 Features & Functions
 
-Create a `.env` file at the root of the project.
+The API is organized into several modules, each handling specific business logic:
+
+### 🔐 Authentication (`/auth`)
+
+- **Login**: Authenticates users and issues JWT tokens.
+- **Register**: Registers new users (if allowed).
+- **Guards**: Protects routes using JWT strategies.
+
+### 👤 Users (`/users`)
+
+- **Management**: Create, read, update, and delete system users.
+- **Roles**: Supports different user roles (e.g., ADMIN, SELLER).
+- **Seeding**: Automatically creates a default Admin user if none exists.
+
+### 📦 Products (`/products`)
+
+- **Catalog**: Manage product details including pricing, SKU, barcodes, and images.
+- **Stock Tracking**: Maintains current stock levels (updated via Inventory).
+
+### 📊 Inventory (`/inventory`)
+
+- **Movements**: Tracks stock changes (Input/Output).
+- **History**: Records the history of product movements.
+
+### 💰 Sales (`/sales`)
+
+- **Processing**: Records sales transactions.
+- **Items**: Handles individual items within a sale, calculating subtotals automatically.
+- **Reporting**: (Future) Generate sales reports.
+
+### ⚙️ Configuration (`/configuration`)
+
+- **Store Settings**: Manage global store settings like name, address, currency, and logo.
+
+---
+
+## ⚙️ Configuration
+
+The application requires environment variables to be set. Create a `.env` file in the root directory.
 
 **Development (`.env`):**
 
@@ -67,9 +192,27 @@ NODE_ENV=production
 
 ---
 
-## 🛠️ Installation & Running
+## 🛠️ Installation
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone <repository-url>
+    cd pos_system_api
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    pnpm install
+    ```
+
+---
+
+## ▶️ Running the Application
 
 ### 🐳 Using Docker (Recommended)
+
+Docker simplifies setup by spinning up both the API and the PostgreSQL database.
 
 **Development:**
 
@@ -81,27 +224,26 @@ docker-compose up --build
 **Production:**
 
 ```bash
-# Starts optimized API and DB for production
+# Starts optimized API and DB for production in background
 docker-compose -f docker-compose.prod.yml up --build -d
 ```
 
 ### 💻 Local (Without Docker)
 
-```bash
-# Install dependencies
-pnpm install
+If you prefer running the Node.js app locally, ensure you have a PostgreSQL instance running and configured in your `.env`.
 
-# Run in development
+```bash
+# Run in development mode
 pnpm run start:dev
 
-# Build and run in production
+# Build and run in production mode
 pnpm run build
 pnpm run start:prod
 ```
 
 ### 🔐 Automatic Admin Seeding
 
-When the application starts, if no users exist in the database, a default admin user is created automatically:
+When the application starts, if the database is empty of users, a default admin is created:
 
 - **Email:** `admin@admin.com`
 - **Password:** `admin123`
@@ -109,32 +251,31 @@ When the application starts, if no users exist in the database, a default admin 
 
 ---
 
-## 📚 Swagger Documentation
+## 🚢 Deployment
 
-Swagger available at:
+The application is designed to be easily deployed using **Docker**.
 
-```
-http://localhost:3000/api
-```
+1.  **Containerization**: The app is packaged into a Docker container, ensuring consistency across environments.
+2.  **Orchestration**: `docker-compose` manages the multi-container application (NestJS API + PostgreSQL).
+3.  **Production Build**: The production Dockerfile uses multi-stage builds to create a lightweight image, installing only production dependencies and compiling the TypeScript code.
 
-(Ensure the app is running and `PORT` matches.)
+To deploy:
+
+1.  Set up your server (e.g., VPS, AWS EC2).
+2.  Install Docker and Docker Compose.
+3.  Clone the repo and set up your production `.env` file.
+4.  Run `docker-compose -f docker-compose.prod.yml up -d`.
 
 ---
 
-## 📁 Current Project Structure
+## 📚 API Documentation
+
+Interactive API documentation is generated with Swagger.
+
+**Access it locally at:**
 
 ```
-src/
-├── common/
-│   └── dto/
-│       ├── pagination.dto.ts
-│       └── paginated-response.dto.ts
-├── products/
-│   ├── dto/
-│   ├── entities/
-│   ├── products.controller.ts
-│   └── products.service.ts
-└── main.ts
+http://localhost:3000/api
 ```
 
 ---
@@ -142,5 +283,3 @@ src/
 ## 🧠 Author
 
 **Carlos Alfredo Pérez Hernández** — Computer Systems Engineer
-
----
