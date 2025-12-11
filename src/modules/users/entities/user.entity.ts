@@ -27,6 +27,9 @@ export class User {
   @Column({ select: false })
   password: string;
 
+  @Column({ type: 'text', nullable: true, select: false })
+  refreshToken: string;
+
   @Column('bool', { default: true })
   isActive: boolean;
 

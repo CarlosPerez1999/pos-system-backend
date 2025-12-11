@@ -7,6 +7,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt.guard';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from '../common/decorators/current-user';
 import { User } from '../users/entities/user.entity';
 
@@ -64,5 +65,22 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Password reset successfully' })
   resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetPasswordDto);
+  }
+
+  @Post('refresh')
+  @UseGuards(JwtRefreshGuard)
+  @ApiOperation({ summary: 'Refresh access token using refresh token' })
+  @ApiResponse({ status: 200, description: 'Tokens refreshed successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid refresh token' })
+  refreshTokens(@CurrentUser() user: User) {
+    return this.authService.refreshTokens(user.id);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Logout user and invalidate refresh token' })
+  @ApiResponse({ status: 200, description: 'Logged out successfully' })
+  logout(@CurrentUser() user: User) {
+    return this.authService.logout(user.id);
   }
 }

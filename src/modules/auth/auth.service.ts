@@ -57,15 +57,18 @@ export class AuthService {
 
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) throw new UnauthorizedException('Invalid credentials');
+      
       const payload = {
         sub: user.id,
         username: user.username,
         role: user.role,
         name: user.name,
       };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-      };
+      
+      const tokens = await this.getTokens(payload);
+      await this.updateRefreshToken(user.id, tokens.refresh_token);
+      
+      return tokens;
     } catch (error) {
       this.logger.error(error.message);
       if (error instanceof HttpException) {
@@ -161,5 +164,65 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
     }
+  }
+
+  async getTokens(payload: {
+    sub: string;
+    username: string;
+    role: string;
+    name: string;
+  }) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.getOrThrow('JWT_SECRET'),
+        expiresIn: '15m',
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.getOrThrow('JWT_REFRESH_SECRET'),
+        expiresIn: '7d',
+      }),
+    ]);
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
+  }
+
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.usersRepository.update(userId, {
+      refreshToken: hashedRefreshToken,
+    });
+  }
+
+  async refreshTokens(userId: string) {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'username', 'role', 'name'],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      role: user.role,
+      name: user.name,
+    };
+
+    const tokens = await this.getTokens(payload);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    return tokens;
+  }
+
+  async logout(userId: string) {
+    await this.usersRepository.update(userId, {
+      refreshToken: null,
+    });
+    return { message: 'Logged out successfully' };
   }
 }
