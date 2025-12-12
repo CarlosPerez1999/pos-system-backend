@@ -49,14 +49,21 @@ export class AuthService {
         ],
       });
 
-      if (!user)
+      if (!user) {
+        this.logger.debug(`Login attempt failed: user not found (${username})`);
         throw new NotFoundException(`User with username ${username} not found`);
+      }
 
-      if (!user.isActive)
+      if (!user.isActive) {
+        this.logger.debug(`Login attempt failed: inactive account (${username})`);
         throw new UnauthorizedException('User account is inactive');
+      }
 
       const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) throw new UnauthorizedException('Invalid credentials');
+      this.logger.debug(`Login attempt for ${username}: password match=${isMatch}`);
+      if (!isMatch) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
       
       const payload = {
         sub: user.id,
