@@ -30,5 +30,9 @@ COPY --from=builder /app/package.json ./
 # Expose the application port
 EXPOSE 3000
 
-# Start the application
-CMD ["node", "dist/main"]
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Use entrypoint to run migrations before starting the app
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
