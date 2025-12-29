@@ -11,28 +11,36 @@ COPY package.json pnpm-lock.yaml ./
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copy source code and build
 COPY . .
-
-# Build the application
 RUN pnpm build
 
-# Production stage
+### Final image with Postgres and app
 FROM node:22-alpine
+
+RUN apk add --no-cache bash su-exec shadow postgresql postgresql-client postgresql-contrib openssl ca-certificates \
+	&& (addgroup -S postgres || true) \
+	&& (adduser -S -G postgres postgres || true)
 
 WORKDIR /app
 
-# Copy built assets and production dependencies from builder stage
+# Create directories
+RUN mkdir -p /var/lib/postgresql/data /app/dist /app/node_modules
+
+# Copy built app and production deps
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 
-# Expose the application port
+# Copy entrypoint
+COPY docker-entrypoint-multi.sh /usr/local/bin/docker-entrypoint-multi.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint-multi.sh
+
+# Expose port used by Nest
 EXPOSE 3000
 
-# Copy entrypoint script
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+VOLUME ["/var/lib/postgresql/data"]
 
-# Use entrypoint to run migrations before starting the app
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+USER root
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-multi.sh"]

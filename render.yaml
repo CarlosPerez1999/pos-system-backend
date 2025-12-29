@@ -1,0 +1,27 @@
+# Render service configuration: API + Postgres on same instance
+# Secrets should be set in Render (do NOT store secrets in this file)
+
+services:
+  - type: web
+    name: pos-system-api
+    env: docker
+    branch: main
+    dockerfilePath: Dockerfile
+    plan: standard
+    disk:
+      name: pgdata
+      sizeGb: 10
+      mountPath: /var/lib/postgresql/data
+    envVars:
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_DB
+        value: posdb
+      - key: POSTGRES_PASSWORD
+        fromSecret: POSTGRES_PASSWORD
+      - key: JWT_SECRET
+        fromSecret: JWT_SECRET
+      - key: JWT_REFRESH_SECRET
+        fromSecret: JWT_REFRESH_SECRET
+    # Optional: health check path if your app exposes one
+    # healthCheckPath: /api/health

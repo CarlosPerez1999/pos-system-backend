@@ -268,6 +268,21 @@ To deploy:
 
 ---
 
+## 🚢 Despliegue (Render: API + Postgres en la misma instancia)
+
+Este repo incluye `render.yaml` y un `Dockerfile` que inicializa Postgres dentro del contenedor y monta `/var/lib/postgresql/data` para persistencia. No guardes secretos en el repo: usa los Secret variables de Render.
+
+Pasos rápidos en Render (Dashboard o CLI):
+
+1) Crea un servicio Web y conecta tu repo (o usa `render.yaml` para configuración automática).
+2) Crea un Persistent Disk (ej: 10 GB) y monta en `/var/lib/postgresql/data` o deja que `render.yaml` lo gestione.
+3) Añade Secrets en el servicio (no en el repo): `POSTGRES_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`.
+4) Despliega desde la rama `main` (Render usará el `Dockerfile` del repo).
+
+Ejemplo `render.yaml` ya incluido en el repo para desplegar automáticamente con disco y variables enlazadas a secrets.
+
+Si prefieres usar una base de datos administrada (recomendado), crea un Managed Postgres en Render y configura la variable `DATABASE_URL` o `DB_HOST/POSTGRES_*` en el servicio.
+
 ## 📚 API Documentation
 
 Interactive API documentation is generated with Swagger.
